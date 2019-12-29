@@ -37,3 +37,11 @@ FORMS    += \
     src/AboutDialog.ui \
     src/mainwindow.ui \
     src/solve.ui
+
+DISTFILES += \
+    .appveyor.yml \
+    .gitignore \
+    .travis.yml \
+    LICENSE \
+    README.md \
+    liloucalc.png

@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/Antidote1911/liloucalc.svg?branch=master)](https://travis-ci.org/Antidote1911/liloucalc)
 # LilouCalc
 
 A real simple scientific calculator written in C++ and Qt5
