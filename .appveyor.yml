@@ -18,6 +18,9 @@ install:
   - if not %cname%==mingw call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   - if not %cname%==mingw set make=nmake.exe
   - if not %cname%==mingw %make% /? > nul
+  - cmd: git submodule update --init --recursive
+  - cmd: cd c:\tools\vcpkg
+  - cmd: vcpkg integrate install
   - cmd: vcpkg install gsl:x64-windows
 
 before_build:
