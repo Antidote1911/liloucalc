@@ -6,7 +6,7 @@ TARGET = LilouCalc
 TEMPLATE = app
 INCLUDEPATH += .
 
-LIBS += -lgsl -lgslcblas -lm
+LIBS += -lgsl -lgslcblas
 
 include(common.pri)
 RESOURCES = RCalc.qrc
