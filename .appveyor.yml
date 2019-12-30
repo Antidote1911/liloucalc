@@ -29,6 +29,7 @@ before_build:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - '%make%' -lgsl
+  - nmake
+  #- '%make%' -lgsl
    #Also, build vcxproj (without qt)
 
