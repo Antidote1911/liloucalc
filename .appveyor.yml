@@ -3,7 +3,7 @@ version: 0.9.{build}
 environment:
   matrix:
     - QTDIR: C:\Qt\5.13.2\mingw73_64
-      cname: msvs
+      cname: msvc
 
 configuration:
   - release
@@ -15,7 +15,7 @@ install:
   - if %cname%==mingw set make=mingw32-make.exe
   - if %cname%==mingw g++ --version
   - if %cname%==mingw %make% --version
-  - if not %cname%==mingw call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+  - if not %cname%==mingw call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
   - if not %cname%==mingw set make=nmake.exe
   - if not %cname%==mingw %make% /? > nul
   - cmd: cd c:\tools\vcpkg
