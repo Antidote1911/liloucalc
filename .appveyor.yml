@@ -1,15 +1,11 @@
-os: unstable
-#atrix:
-# - build: msvc2010
-#   QTDIR:
-#   make: nmake release
+branches:
+  only:
+    - master
+
 install:
-# - set QTDIR=C:\Qt\5.5\mingw492_32
- - set QTDIR=C:\Qt\5.13.2\msvc2017_64
- - set PATH=%PATH%;%QTDIR%\bin
-# - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
+  - set QTDIR=C:\Qt\5.11.0\mingw53_32
+  - choco install -y InnoSetup
+  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw530_32\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
 build_script:
- - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64'
- - qmake liloucalc.pro
- - nmake release
- - cd release
+  - qmake liloucalc.pro
+  - mingw32-make
