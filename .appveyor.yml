@@ -5,6 +5,7 @@ branches:
 install:
   - set QTDIR=C:\Qt\5.13.2\mingw73_64
   - choco install -y InnoSetup
+  - choco install -y gsl
   - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw530_32\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
 build_script:
   - qmake liloucalc.pro
