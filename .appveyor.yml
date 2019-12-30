@@ -7,6 +7,14 @@ install:
   - choco install -y InnoSetup
   - choco install -y gsl
   - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw530_32\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
+  - cd C:\Tools\vcpkg
+  - git pull
+  - .\bootstrap-vcpkg.bat
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - vcpkg install gsl:x64-windows
+  - cd c:\tools\vcpkg
+  - vcpkg integrate install
 build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
   - qmake liloucalc.pro
   - mingw32-make
