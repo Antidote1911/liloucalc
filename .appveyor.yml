@@ -1,19 +1,15 @@
-branches:
-  only:
-    - master
+version: build{build}
+
+# https://www.appveyor.com/docs/windows-images-software/
+image: Visual Studio 2019
+
+environment:
+  QT5: C:\Qt\5.13.1\mingw73_64
 
 install:
-  - set QTDIR=C:\Qt\5.13.2\mingw73_64
-  - choco install -y InnoSetup
-  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw530_32\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 5"
-  - cd C:\Tools\vcpkg
-  - git pull
-  - .\bootstrap-vcpkg.bat
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - vcpkg install gsl:x64-windows
-  - cd c:\tools\vcpkg
-  - vcpkg integrate install
+  - set QTDIR=C:\Qt\5.13.1\mingw73_64
+  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw730_64\bin;%PATH%
+
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
   - qmake liloucalc.pro
   - mingw32-make
