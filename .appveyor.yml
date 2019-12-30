@@ -3,7 +3,7 @@ version: 0.9.{build}
 environment:
   matrix:
     - QTDIR: C:\Qt\5.13.2\mingw73_64
-      cname: mingw
+      cname: msvs
 
 configuration:
   - release
@@ -29,7 +29,6 @@ before_build:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - nmake
-  #- '%make%' -lgsl
+  - '%make%'
    #Also, build vcxproj (without qt)
 
