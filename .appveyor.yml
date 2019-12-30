@@ -9,7 +9,7 @@ install:
  - set PATH=%PATH%;%QTDIR%\bin
 # - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
 build_script:
- - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
+ - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64'
  - qmake liloucalc.pro
  - nmake release
  - cd release
