@@ -1,34 +1,94 @@
-version: 0.9.{build}
+clone_depth: 5
 
 environment:
-  matrix:
-    - QTDIR: C:\Qt\5.13.2\mingw73_64
-      cname: msvc
+  SCCACHE_CACHE_SIZE: 160M
+  SCCACHE_VERSION: 0.2.12
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
 
-configuration:
-  - release
+  matrix:
+
+    # MinGW GCC
+    - CC: MinGW
+      PLATFORM: x86_amd64
+      TARGET: static
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      MAKE_TOOL: mingw32-make
+      TARGET_CC: gcc
+
+    # MSVC 2015 DLL x86-32
+    - CC: VC2015
+      PLATFORM: x86
+      TARGET: shared
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      BOOST_ROOT: "C:\\Libraries\\boost_1_69_0"
+      BOOST_LIBRARYDIR: "C:\\Libraries\\boost_1_69_0\\lib32-msvc-14.0"
+      BOOST_SYSTEM_LIBRARY: "libboost_system-vc140-mt-x32-1_69"
+      MAKE_TOOL: nmake
+      TARGET_CC: msvc
+      EXTRA_FLAGS: "--disable-werror"
+
+    # MSVC 2017 DLL x86-32
+    - CC: VC2017
+      PLATFORM: x86
+      TARGET: shared
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      BOOST_ROOT: "C:\\Libraries\\boost_1_69_0"
+      BOOST_LIBRARYDIR: "C:\\Libraries\\boost_1_69_0\\lib32-msvc-14.1"
+      BOOST_SYSTEM_LIBRARY: "libboost_system-vc141-mt-x32-1_69"
+      MAKE_TOOL: jom
+      TARGET_CC: msvc
+
+    # MSVC 2017 DLL x86-64
+    - CC: VC2017
+      PLATFORM: x86_amd64
+      TARGET: shared
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      BOOST_ROOT: "C:\\Libraries\\boost_1_69_0"
+      BOOST_LIBRARYDIR: "C:\\Libraries\\boost_1_69_0\\lib64-msvc-14.1"
+      BOOST_SYSTEM_LIBRARY: "libboost_system-vc141-mt-x64-1_69"
+      MAKE_TOOL: jom
+      TARGET_CC: msvc
+
+    # MSVC 2017 static x86-64
+    - CC: VC2017
+      PLATFORM: x86_amd64
+      TARGET: static
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      BOOST_ROOT: "C:\\Libraries\\boost_1_69_0"
+      BOOST_LIBRARYDIR: "C:\\Libraries\\boost_1_69_0\\lib64-msvc-14.1"
+      BOOST_SYSTEM_LIBRARY: "libboost_system-vc141-mt-x64-1_69"
+      MAKE_TOOL: jom
+      TARGET_CC: msvc
+
+    # MSVC 2019 static x86-64 w/debug iterators
+    - CC: VC2019
+      PLATFORM: x86_amd64
+      TARGET: sanitizer
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      MAKE_TOOL: jom
+      TARGET_CC: msvc
+
+    # MSVC 2019 x86-64 preview
+    - CC: VC2019p
+      PLATFORM: x86_amd64
+      TARGET: static
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+      MAKE_TOOL: jom
+      TARGET_CC: msvc
 
 install:
-  - '%QTDIR%\bin\qtenv2.bat'
-  - qmake -v
-  - if %QTDIR:_64=%==%QTDIR% ( set ARCH=x86 ) else set ARCH=x64
-  - if %cname%==mingw set make=mingw32-make.exe
-  - if %cname%==mingw g++ --version
-  - if %cname%==mingw %make% --version
-  - if not %cname%==mingw call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
-  - if not %cname%==mingw set make=nmake.exe
-  - if not %cname%==mingw %make% /? > nul
-  - cmd: cd c:\tools\vcpkg
-  - cmd: vcpkg integrate install
-  - cmd: vcpkg install gsl:x64-windows
-
-before_build:
-  - if %cname%==mingw set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin;C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\shared
+  - call src\scripts\ci\setup_appveyor.bat
   - cd %APPVEYOR_BUILD_FOLDER%
   - qmake
-
-build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - '%make%'
-   #Also, build vcxproj (without qt)
+  - nmake.exe
 
+
+
+# whitelist branches to avoid testing feature branches twice (as branch and as pull request)
+branches:
+  only:
+    - master
+
+cache:
+  - C:\Users\appveyor\AppData\Local\Mozilla\sccache\cache

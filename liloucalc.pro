@@ -44,4 +44,5 @@ DISTFILES += \
     .travis.yml \
     LICENSE \
     README.md \
-    liloucalc.png
+    liloucalc.png \
+    setup_appveyor.bat
