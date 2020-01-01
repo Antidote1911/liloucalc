@@ -1,9 +1,5 @@
 image: Visual Studio 2017
 
-clone_folder: C:\projects\sheep-qt
-shallow_clone: true
-cache: c:\tools\vcpkg\installed\
-
 # See https://www.appveyor.com/docs/windows-images-software/#qt
 environment:
   matrix:
@@ -24,8 +20,8 @@ environment:
     #- QTDIR: C:\Qt\5.12.5\mingw73_64
     #- QTDIR: C:\Qt\5.12.5\mingw73_32
     #- QTDIR: C:\Qt\5.12.5\msvc2015_64
-    #- QTDIR: C:\Qt\5.13.2\mingw73_64
-    #- QTDIR: C:\Qt\5.13.2\mingw73_32
+    - QTDIR: C:\Qt\5.13.2\mingw73_64
+    - QTDIR: C:\Qt\5.13.2\mingw73_32
     - QTDIR: C:\Qt\5.13.2\msvc2017
     - QTDIR: C:\Qt\5.13.2\msvc2017_64
 
@@ -48,14 +44,13 @@ install:
   - if not %QTDIR:msvc2017=%==%QTDIR% call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   - if not %QTDIR:msvc=%==%QTDIR% set make=nmake.exe
   - if not %QTDIR:msvc=%==%QTDIR% %make% /? > nul
-  - vcpkg install gsl
-  - vcpkg integrate install
 
 before_build:
   # Prepare the out-of-source build directory
   - mkdir %APPVEYOR_BUILD_FOLDER%-build
-  - cmake .. -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DPLEIONE_DOC=OFF -DPLEIONE_PERF=ON -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_GENERATOR_PLATFORM=%PLATFORM% -DCMAKE_CXX_FLAGS="/wd4275 /wd4251"
+  - qmake -o %APPVEYOR_BUILD_FOLDER%-build -r -Wall -Wlogic -Wparser CONFIG+=%CONFIGURATION% %APPVEYOR_BUILD_FOLDER%
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%-build
   - '%make%'
+
