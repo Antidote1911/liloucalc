@@ -49,6 +49,7 @@ install:
   - if not %QTDIR:msvc=%==%QTDIR% set make=nmake.exe
   - if not %QTDIR:msvc=%==%QTDIR% %make% /? > nul
   - vcpkg install gsl:%ARCH%-windows
+  - vcpkg integrate install
 
 before_build:
   # Prepare the out-of-source build directory
