@@ -54,7 +54,7 @@ install:
 before_build:
   # Prepare the out-of-source build directory
   - mkdir %APPVEYOR_BUILD_FOLDER%-build
-  - qmake -o %APPVEYOR_BUILD_FOLDER%-build -r -Wall -Wlogic -Wparser CONFIG+=%CONFIGURATION% %APPVEYOR_BUILD_FOLDER%
+  - cmake -o %APPVEYOR_BUILD_FOLDER%-build -r -Wall -Wlogic -Wparser CONFIG+=%CONFIGURATION% %APPVEYOR_BUILD_FOLDER%
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%-build
