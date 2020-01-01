@@ -54,7 +54,7 @@ install:
 before_build:
   # Prepare the out-of-source build directory
   - mkdir %APPVEYOR_BUILD_FOLDER%-build
-  - cmake -o %APPVEYOR_BUILD_FOLDER%-build -r -Wall -Wlogic -Wparser CONFIG+=%CONFIGURATION% %APPVEYOR_BUILD_FOLDER%
+  - cmake .. -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DPLEIONE_DOC=OFF -DPLEIONE_PERF=ON -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_GENERATOR_PLATFORM=%PLATFORM% -DCMAKE_CXX_FLAGS="/wd4275 /wd4251"
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%-build
