@@ -24,8 +24,8 @@ environment:
     #- QTDIR: C:\Qt\5.12.5\mingw73_64
     #- QTDIR: C:\Qt\5.12.5\mingw73_32
     #- QTDIR: C:\Qt\5.12.5\msvc2015_64
-    - QTDIR: C:\Qt\5.13.2\mingw73_64
-    - QTDIR: C:\Qt\5.13.2\mingw73_32
+    #- QTDIR: C:\Qt\5.13.2\mingw73_64
+    #- QTDIR: C:\Qt\5.13.2\mingw73_32
     - QTDIR: C:\Qt\5.13.2\msvc2017
     - QTDIR: C:\Qt\5.13.2\msvc2017_64
 
@@ -48,7 +48,7 @@ install:
   - if not %QTDIR:msvc2017=%==%QTDIR% call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   - if not %QTDIR:msvc=%==%QTDIR% set make=nmake.exe
   - if not %QTDIR:msvc=%==%QTDIR% %make% /? > nul
-  - vcpkg install gsl:%ARCH%-windows
+  - vcpkg install gsl
   - vcpkg integrate install
 
 before_build:
