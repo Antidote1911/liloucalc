@@ -34,27 +34,41 @@ install:
   # Setup the build toolchains
   - cmd: vcpkg integrate install
   - cmd: vcpkg install gsl:x64-windows
-  - cmd: cd C:/Tools/vcpkg/
+  - cmd: cd C:/Tools/vcpkg/packages/gsl_x64-windows/share/
   - cmd: dir
-  - cmd: cd C:/Tools/vcpkg/packages/gsl_x64-windows/
+  - cmd: cd C:/Tools/vcpkg/packages/gsl_x64-windows/bin/
   - cmd: dir
+  - cmd: cd C:/Tools/vcpkg/packages/gsl_x64-windows/lib/
+  - cmd: dir
+  - cd %APPVEYOR_BUILD_FOLDER%
   - '%QTDIR%\bin\qtenv2.bat'
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - qmake -v
   - if %QTDIR:_64=%==%QTDIR% ( set ARCH=x86 ) else set ARCH=x64
-  - if %QTDIR:msvc=%==%QTDIR% g++ --version
-  - if %QTDIR:msvc=%==%QTDIR% set make=mingw32-make.exe
-  - if %QTDIR:msvc=%==%QTDIR% %make% --version
-  - if not %QTDIR:msvc2017=%==%QTDIR% call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
-  - if not %QTDIR:msvc=%==%QTDIR% set make=nmake.exe
-  - if not %QTDIR:msvc=%==%QTDIR% %make% /? > nul
+  - if %cname%==mingw set make=mingw32-make.exe
+  - if %cname%==mingw g++ --version
+  - if %cname%==mingw %make% --version
+  - if not %cname%==mingw call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+  - if not %cname%==mingw set make=nmake.exe
+  - if not %cname%==mingw %make% /? > nul
+  - if %cname%==mingw set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin;C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\shared
 
 before_build:
-  # Prepare the out-of-source build directory
-  - mkdir %APPVEYOR_BUILD_FOLDER%-build
-  - qmake -o %APPVEYOR_BUILD_FOLDER%-build -r -Wall -Wlogic -Wparser CONFIG+=%CONFIGURATION% %APPVEYOR_BUILD_FOLDER%
+    # Prepare the out-of-source build directory.
+    - cd %APPVEYOR_BUILD_FOLDER%
+    - qmake liloucalc.pro
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%-build
   - '%make%'
 
+after_build:
+    - cd %APPVEYOR_BUILD_FOLDER%
+    - mkdir liloucalc_win_x64
+    - cd liloucalc_win_x64
+    - xcopy %APPVEYOR_BUILD_FOLDER%\release\LilouCalc.exe %APPVEYOR_BUILD_FOLDER%\liloucalc_win_x64\
+    #- xcopy %APPVEYOR_BUILD_FOLDER%\src\botan\release\arsenic_core.dll %APPVEYOR_BUILD_FOLDER%\arsenic_win_x64\
+    - windeployqt LilouCalc.exe
+
+artifacts:
+  #- path: \release\arsenic-*.exe
+  - path: liloucalc_win_x64
+    type: zip
