@@ -47,7 +47,7 @@ after_build:
     - cd liloucalc_win_x64
     - xcopy %APPVEYOR_BUILD_FOLDER%\release\LilouCalc.exe %APPVEYOR_BUILD_FOLDER%\liloucalc_win_x64\
     - xcopy C:\Tools\vcpkg\packages\gsl_x64-windows\bin\gsl.dll %APPVEYOR_BUILD_FOLDER%\liloucalc_win_x64\
-    - xcopy C:\Tools\vcpkg\packages\gsl_x64-windows\bin\gslcblas.lib %APPVEYOR_BUILD_FOLDER%\liloucalc_win_x64\
+    - xcopy C:\Tools\vcpkg\packages\gsl_x64-windows\bin\gslcblas.dll %APPVEYOR_BUILD_FOLDER%\liloucalc_win_x64\
     - windeployqt LilouCalc.exe
 
 artifacts:
