@@ -21,8 +21,6 @@ environment:
     #- QTDIR: C:\Qt\5.12.5\mingw73_32
     #- QTDIR: C:\Qt\5.12.5\msvc2015_64
     - QTDIR: C:\Qt\5.13.2\mingw73_64
-    - QTDIR: C:\Qt\5.13.2\mingw73_32
-    - QTDIR: C:\Qt\5.13.2\msvc2017
     - QTDIR: C:\Qt\5.13.2\msvc2017_64
 
 configuration:
@@ -34,6 +32,7 @@ init:
 
 install:
   # Setup the build toolchains
+  - cmd: vcpkg integrate install
   - cmd: vcpkg install gsl:x64-windows
   - '%QTDIR%\bin\qtenv2.bat'
   - qmake -v
@@ -41,7 +40,6 @@ install:
   - if %QTDIR:msvc=%==%QTDIR% g++ --version
   - if %QTDIR:msvc=%==%QTDIR% set make=mingw32-make.exe
   - if %QTDIR:msvc=%==%QTDIR% %make% --version
-  - if not %QTDIR:msvc2015=%==%QTDIR% call "%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %ARCH%
   - if not %QTDIR:msvc2017=%==%QTDIR% call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   - if not %QTDIR:msvc=%==%QTDIR% set make=nmake.exe
   - if not %QTDIR:msvc=%==%QTDIR% %make% /? > nul
