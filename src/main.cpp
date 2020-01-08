@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     a.setApplicationName("LilouCalc");
     a.setApplicationVersion("1.0");
     a.setWindowIcon(QIcon(":/image/icon.svg"));
+    a.setStyle("Fusion");
     MainWindow c;
     c.show();
 
