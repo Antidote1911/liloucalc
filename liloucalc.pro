@@ -12,8 +12,8 @@ unix:!macx {
 }
 win32 {
 #    LIBS += -L"C:\Program Files\GnuWin32\lib" -lgsl -lgslcblas
-    LIBS += -L"C:\Program Files (x86)\GnuWin32\lib" -lgsl -lgslcblas
-    INCLUDEPATH += "C:\Program Files (x86)\GnuWin32\include"
+    LIBS += -L"C:\Tools\vcpkg\packages\gsl_x64-windows\lib" -lgsl -lgslcblas
+    INCLUDEPATH += "C:\Tools\vcpkg\packages\gsl_x64-windows\include"
 }
 
 include(common.pri)
