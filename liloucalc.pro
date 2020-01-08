@@ -6,7 +6,15 @@ TARGET = LilouCalc
 TEMPLATE = app
 INCLUDEPATH += .
 
-LIBS += -lgsl -lgslcblas
+
+unix:!macx {
+    LIBS += -lgsl -lgslcblas
+}
+win32 {
+#    LIBS += -L"C:\Program Files\GnuWin32\lib" -lgsl -lgslcblas
+    LIBS += -L"C:\Program Files (x86)\GnuWin32\lib" -lgsl -lgslcblas
+    INCLUDEPATH += "C:\Program Files (x86)\GnuWin32\include"
+}
 
 include(common.pri)
 RESOURCES = RCalc.qrc
