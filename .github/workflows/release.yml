@@ -24,7 +24,7 @@ jobs:
 
           - name: Windows
             os: windows-latest
-            artifact: LilouCalc-windows.zip
+            artifact: LilouCalc-Windows-portable.zip
 
           - name: macOS Universal
             os: macos-latest
@@ -66,7 +66,7 @@ jobs:
           cache: true
           aqtversion: ${{ matrix.aqt_version }}
 
-      - name: Setup MSYS2 with Qt6 and GSL (Windows)
+      - name: Setup MSYS2 with Qt6, GSL and NSIS (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
@@ -80,6 +80,7 @@ jobs:
             mingw-w64-x86_64-gsl
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-nsis
             zip
 
       - name: Install GSL universal (macOS)
@@ -157,7 +158,7 @@ jobs:
           macdeployqt build/LilouCalc.app -dmg
           mv build/LilouCalc.dmg LilouCalc-macos.dmg
 
-      - name: Package ZIP (Windows)
+      - name: Package Windows portable ZIP
         if: runner.os == 'Windows'
         shell: msys2 {0}
         run: |
@@ -165,13 +166,35 @@ jobs:
           cp build/LilouCalc.exe artifact/
           windeployqt6 --release artifact/LilouCalc.exe
           ldd build/LilouCalc.exe | awk '/\/mingw64\//{print $3}' | xargs -I{} cp -n {} artifact/ || true
-          cd artifact && zip -r ../LilouCalc-windows.zip .
+          cd artifact && zip -r ../LilouCalc-Windows-portable.zip .
 
-      - name: Upload artifact
+      - name: Package Windows installer
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          makensis -DAPP_VERSION="$VERSION" installer/windows.nsi
+
+      - name: Upload artifact (Linux/macOS)
+        if: runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.artifact }}
+
+      - name: Upload portable ZIP (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LilouCalc-Windows-portable.zip
+          path: LilouCalc-Windows-portable.zip
+
+      - name: Upload installer (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LilouCalc-Windows-setup.exe
+          path: LilouCalc-Windows-setup.exe
 
   release:
     name: Create Release
@@ -190,4 +213,5 @@ jobs:
           files: |
             LilouCalc-linux.AppImage/LilouCalc-linux.AppImage
             LilouCalc-macos.dmg/LilouCalc-macos.dmg
-            LilouCalc-windows.zip/LilouCalc-windows.zip
+            LilouCalc-Windows-portable.zip/LilouCalc-Windows-portable.zip
+            LilouCalc-Windows-setup.exe/LilouCalc-Windows-setup.exe
