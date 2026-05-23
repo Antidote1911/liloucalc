@@ -80,6 +80,10 @@ if(NOT MSVC)
     endif()
 endif()
 
+if(WIN32)
+    list(APPEND APP_SOURCES LilouCalc.rc)
+endif()
+
 qt_add_executable(LilouCalc
     ${APP_SOURCES}
     ${CORE_SOURCES}
