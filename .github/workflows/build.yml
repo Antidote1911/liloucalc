@@ -1,0 +1,125 @@
+name: Build
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+env:
+  QT_VERSION: '6.11.1'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-24.04
+
+          - name: Windows
+            os: windows-latest
+
+          - name: macOS Universal
+            os: macos-latest
+            qt_host: mac
+            qt_arch: clang_64
+            aqt_version: '==3.1.19'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgsl-dev libxkbcommon-x11-0 'libxcb-*'
+
+      - name: Install Qt ${{ env.QT_VERSION }} (Linux)
+        if: runner.os == 'Linux'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          cache: true
+
+      - name: Install Qt ${{ env.QT_VERSION }} (macOS)
+        if: runner.os == 'macOS'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: ${{ matrix.qt_host }}
+          target: desktop
+          arch: ${{ matrix.qt_arch }}
+          cache: true
+          aqtversion: ${{ matrix.aqt_version }}
+
+      - name: Setup MSYS2 with Qt6 and GSL (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-svg
+            mingw-w64-x86_64-qt6-tools
+            mingw-w64-x86_64-gsl
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: Install GSL universal (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install gsl
+          curl -sLO https://ftp.gnu.org/gnu/gsl/gsl-2.8.tar.gz
+          tar xf gsl-2.8.tar.gz
+          cd gsl-2.8
+          ./configure --prefix=/tmp/gsl-x86_64 --disable-shared \
+            CC="clang -arch x86_64" CFLAGS="-mmacosx-version-min=10.15"
+          make -j$(sysctl -n hw.logicalcpu)
+          make install
+          cd ..
+          mkdir -p /tmp/gsl-universal/include /tmp/gsl-universal/lib
+          cp -r /opt/homebrew/include/gsl /tmp/gsl-universal/include/
+          lipo -create /opt/homebrew/lib/libgsl.a /tmp/gsl-x86_64/lib/libgsl.a \
+            -output /tmp/gsl-universal/lib/libgsl.a
+          lipo -create /opt/homebrew/lib/libgslcblas.a /tmp/gsl-x86_64/lib/libgslcblas.a \
+            -output /tmp/gsl-universal/lib/libgslcblas.a
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (macOS universal)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" \
+            -DGSL_INCLUDE_DIR=/tmp/gsl-universal/include \
+            -DGSL_LIBRARY=/tmp/gsl-universal/lib/libgsl.a \
+            -DGSL_CBLAS_LIBRARY=/tmp/gsl-universal/lib/libgslcblas.a
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/mingw64
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: cmake --build build --config Release --parallel
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: cmake --build build --parallel

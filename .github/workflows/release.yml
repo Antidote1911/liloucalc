@@ -1,0 +1,193 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  QT_VERSION: '6.11.1'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-24.04
+            artifact: LilouCalc-linux.AppImage
+
+          - name: Windows
+            os: windows-latest
+            artifact: LilouCalc-windows.zip
+
+          - name: macOS Universal
+            os: macos-latest
+            qt_host: mac
+            qt_arch: clang_64
+            aqt_version: '==3.1.19'
+            artifact: LilouCalc-macos.dmg
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgsl-dev xvfb libxkbcommon-x11-0 'libxcb-*'
+
+      - name: Install Qt ${{ env.QT_VERSION }} (Linux)
+        if: runner.os == 'Linux'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          cache: true
+
+      - name: Install Qt ${{ env.QT_VERSION }} (macOS)
+        if: runner.os == 'macOS'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: ${{ matrix.qt_host }}
+          target: desktop
+          arch: ${{ matrix.qt_arch }}
+          cache: true
+          aqtversion: ${{ matrix.aqt_version }}
+
+      - name: Setup MSYS2 with Qt6 and GSL (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-svg
+            mingw-w64-x86_64-qt6-tools
+            mingw-w64-x86_64-gsl
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            zip
+
+      - name: Install GSL universal (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install gsl
+          curl -sLO https://ftp.gnu.org/gnu/gsl/gsl-2.8.tar.gz
+          tar xf gsl-2.8.tar.gz
+          cd gsl-2.8
+          ./configure --prefix=/tmp/gsl-x86_64 --disable-shared \
+            CC="clang -arch x86_64" CFLAGS="-mmacosx-version-min=10.15"
+          make -j$(sysctl -n hw.logicalcpu)
+          make install
+          cd ..
+          mkdir -p /tmp/gsl-universal/include /tmp/gsl-universal/lib
+          cp -r /opt/homebrew/include/gsl /tmp/gsl-universal/include/
+          lipo -create /opt/homebrew/lib/libgsl.a /tmp/gsl-x86_64/lib/libgsl.a \
+            -output /tmp/gsl-universal/lib/libgsl.a
+          lipo -create /opt/homebrew/lib/libgslcblas.a /tmp/gsl-x86_64/lib/libgslcblas.a \
+            -output /tmp/gsl-universal/lib/libgslcblas.a
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (macOS universal)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" \
+            -DGSL_INCLUDE_DIR=/tmp/gsl-universal/include \
+            -DGSL_LIBRARY=/tmp/gsl-universal/lib/libgsl.a \
+            -DGSL_CBLAS_LIBRARY=/tmp/gsl-universal/lib/libgslcblas.a
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/mingw64
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: cmake --build build --config Release --parallel
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: cmake --build build --parallel
+
+      - name: Package AppImage (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p AppDir/usr/bin \
+                   AppDir/usr/share/applications \
+                   AppDir/usr/share/icons/hicolor/scalable/apps
+          cp build/LilouCalc AppDir/usr/bin/
+          cp image/icon.svg AppDir/usr/share/icons/hicolor/scalable/apps/liloucalc.svg
+          cat > AppDir/usr/share/applications/liloucalc.desktop << 'EOF'
+          [Desktop Entry]
+          Name=LilouCalc
+          Exec=LilouCalc
+          Icon=liloucalc
+          Type=Application
+          Categories=Utility;Calculator;
+          EOF
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          export QMAKE=$(which qmake6 2>/dev/null || which qmake)
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
+          mv LilouCalc*.AppImage LilouCalc-linux.AppImage
+
+      - name: Package DMG (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          macdeployqt build/LilouCalc.app -dmg
+          mv build/LilouCalc.dmg LilouCalc-macos.dmg
+
+      - name: Package ZIP (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          mkdir -p artifact
+          cp build/LilouCalc.exe artifact/
+          windeployqt6 --release artifact/LilouCalc.exe
+          ldd build/LilouCalc.exe | awk '/\/mingw64\//{print $3}' | xargs -I{} cp -n {} artifact/ || true
+          cd artifact && zip -r ../LilouCalc-windows.zip .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            LilouCalc-linux.AppImage/LilouCalc-linux.AppImage
+            LilouCalc-macos.dmg/LilouCalc-macos.dmg
+            LilouCalc-windows.zip/LilouCalc-windows.zip
