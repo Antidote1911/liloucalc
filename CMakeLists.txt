@@ -12,17 +12,13 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Svg)
 find_package(GSL REQUIRED)
 
 set(CORE_SOURCES
-    core/book.cpp
     core/constants.cpp
     core/evaluator.cpp
     core/functions.cpp
     core/mathdsl.cpp
     core/numberformatter.cpp
-    core/pageserver.cpp
     core/settings.cpp
     core/session.cpp
-    core/sessionhistory.cpp
-    core/startupdefinitions.cpp
     core/unitdisplayformat.cpp
     core/units.cpp
     core/variable.cpp
