@@ -81,6 +81,8 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-nsis
+            mingw-w64-x86_64-imagemagick
+            mingw-w64-x86_64-librsvg
             zip
 
       - name: Install GSL universal (macOS)
@@ -172,6 +174,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: msys2 {0}
         run: |
+          magick image/icon.svg -define icon:auto-resize="256,128,64,48,32,16" image/icon.ico
           VERSION="${GITHUB_REF_NAME#v}"
           makensis -DAPP_VERSION="$VERSION" installer/windows.nsi
 

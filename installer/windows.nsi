@@ -1,5 +1,9 @@
+!cd ".."
+
 !define APP_NAME "LilouCalc"
 !define APP_EXE "LilouCalc.exe"
+!define MUI_ICON "image\icon.ico"
+!define MUI_UNICON "image\icon.ico"
 
 Name "${APP_NAME} ${APP_VERSION}"
 OutFile "LilouCalc-Windows-setup.exe"
