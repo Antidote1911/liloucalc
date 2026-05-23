@@ -84,6 +84,12 @@ if(WIN32)
     list(APPEND APP_SOURCES LilouCalc.rc)
 endif()
 
+if(APPLE)
+    set(MACOSX_ICON image/icon.icns)
+    set_source_files_properties(${MACOSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    list(APPEND APP_SOURCES ${MACOSX_ICON})
+endif()
+
 qt_add_executable(LilouCalc
     ${APP_SOURCES}
     ${CORE_SOURCES}
@@ -115,4 +121,5 @@ target_link_libraries(LilouCalc PRIVATE
 set_target_properties(LilouCalc PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
+    MACOSX_BUNDLE_ICON_FILE icon.icns
 )
