@@ -131,6 +131,6 @@ else()
     install(FILES image/icon.svg
         DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
         RENAME liloucalc.svg)
-    install(FILES installer/liloucalc.desktop
+    install(FILES packaging/linux/liloucalc.desktop
         DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 endif()

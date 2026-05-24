@@ -12,7 +12,7 @@ conflicts=('liloucalc' 'liloucalc-git')
 options=('!strip')
 noextract=('LilouCalc-linux.AppImage')
 source=("LilouCalc-linux.AppImage::https://github.com/Antidote1911/liloucalc/releases/download/v$pkgver/LilouCalc-linux.AppImage"
-        "liloucalc.desktop::https://raw.githubusercontent.com/Antidote1911/liloucalc/v$pkgver/installer/liloucalc.desktop"
+        "liloucalc.desktop::https://raw.githubusercontent.com/Antidote1911/liloucalc/v$pkgver/packaging/linux/liloucalc.desktop"
         "liloucalc.svg::https://raw.githubusercontent.com/Antidote1911/liloucalc/v$pkgver/image/icon.svg")
 sha256sums=('SKIP'
             'SKIP'
