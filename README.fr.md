@@ -4,44 +4,42 @@
 [![Release](https://img.shields.io/github/v/release/Antidote1911/liloucalc)](https://github.com/Antidote1911/liloucalc/releases/latest)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 
-A cross-platform scientific calculator written in C++20 and Qt6.
+Une calculatrice scientifique multiplateforme écrite en C++20 et Qt6.
 
-[Lire en français](README.fr.md)
+![Aperçu](liloucalc.png)
 
-![Preview](liloucalc.png)
+## Fonctionnalités
 
-## Features
+- Saisie par expression avec support complet des parenthèses
+- Fonctions scientifiques : trigonométrie, logarithmes, puissances, factorielles
+- Résolveur d'équations
+- Conversions d'unités (longueur, masse, temps, énergie, pression, et plus)
+- Variables et fonctions définies par l'utilisateur
+- Bibliothèque de constantes
+- Historique de session
+- Thème sombre, clair et système
+- Multiplateforme : Linux, macOS, Windows
 
-- Expression-based input with full parenthesis support
-- Scientific functions: trigonometry, logarithms, powers, factorials
-- Equation solver
-- Unit conversions (length, mass, time, energy, pressure, and more)
-- Variables and user-defined functions
-- Constants library
-- Session history
-- Dark, light, and system theme
-- Cross-platform: Linux, macOS, Windows
+Le moteur d'expressions et le système d'unités sont dérivés du projet [SpeedCrunch](https://speedcrunch.org/).
 
-The expression engine and unit system are derived from the [SpeedCrunch](https://speedcrunch.org/) project.
+## Téléchargement
 
-## Download
+Des binaires pré-compilés sont disponibles sur la page [Releases](https://github.com/Antidote1911/liloucalc/releases) :
 
-Pre-built binaries are available on the [Releases](https://github.com/Antidote1911/liloucalc/releases) page:
+| Plateforme | Format |
+|------------|--------|
+| Linux      | AppImage |
+| macOS      | DMG (universel arm64 + x86_64) |
+| Windows    | ZIP (MinGW) |
 
-| Platform | Format |
-|----------|--------|
-| Linux    | AppImage |
-| macOS    | DMG (universal arm64 + x86_64) |
-| Windows  | ZIP (MinGW) |
+## Compilation depuis les sources
 
-## Build from source
-
-### Requirements
+### Prérequis
 
 - CMake ≥ 3.16
 - Qt6 (Core, Widgets, Gui, Svg)
 - GSL (GNU Scientific Library)
-- A C++20 compiler
+- Un compilateur C++20
 
 ### Linux
 
@@ -69,6 +67,6 @@ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/mingw64
 cmake --build build --parallel
 ```
 
-## License
+## Licence
 
 GPL-2.0-or-later
