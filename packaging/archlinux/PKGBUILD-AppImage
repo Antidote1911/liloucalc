@@ -1,6 +1,6 @@
 # Maintainer: Antidote1911 <eugenadaken836@outlook.com>
 pkgname=liloucalc-appimage
-pkgver=1.1.4
+pkgver=1.1.5
 pkgrel=1
 pkgdesc='Cross-platform scientific calculator written in C++20 and Qt6 (AppImage)'
 arch=('x86_64')
