@@ -1,0 +1,30 @@
+# Maintainer: Antidote1911 <eugenadaken836@outlook.com>
+pkgname=liloucalc-git
+pkgver=r0.0000000
+pkgrel=1
+pkgdesc='Cross-platform scientific calculator written in C++20 and Qt6 (git)'
+arch=('x86_64')
+url='https://github.com/Antidote1911/liloucalc'
+license=('GPL-2.0-or-later')
+depends=('qt6-base' 'qt6-svg' 'gsl')
+makedepends=('cmake' 'git')
+provides=('liloucalc')
+conflicts=('liloucalc')
+source=("git+https://github.com/Antidote1911/liloucalc.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${pkgname%-git}"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cmake -B build -S "${pkgname%-git}" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr
+    cmake --build build --parallel
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}

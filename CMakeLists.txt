@@ -119,3 +119,18 @@ set_target_properties(LilouCalc PROPERTIES
     MACOSX_BUNDLE ON
     MACOSX_BUNDLE_ICON_FILE icon.icns
 )
+
+include(GNUInstallDirs)
+
+if(WIN32)
+    install(TARGETS LilouCalc RUNTIME DESTINATION .)
+elseif(APPLE)
+    install(TARGETS LilouCalc BUNDLE DESTINATION .)
+else()
+    install(TARGETS LilouCalc RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(FILES image/icon.svg
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+        RENAME liloucalc.svg)
+    install(FILES installer/liloucalc.desktop
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+endif()

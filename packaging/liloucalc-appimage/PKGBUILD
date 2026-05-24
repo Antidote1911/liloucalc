@@ -1,0 +1,29 @@
+# Maintainer: Antidote1911 <eugenadaken836@outlook.com>
+pkgname=liloucalc-appimage
+pkgver=1.1.4
+pkgrel=1
+pkgdesc='Cross-platform scientific calculator written in C++20 and Qt6 (AppImage)'
+arch=('x86_64')
+url='https://github.com/Antidote1911/liloucalc'
+license=('GPL-2.0-or-later')
+depends=('fuse2')
+provides=('liloucalc')
+conflicts=('liloucalc' 'liloucalc-git')
+options=('!strip')
+noextract=('LilouCalc-linux.AppImage')
+source=("LilouCalc-linux.AppImage::https://github.com/Antidote1911/liloucalc/releases/download/v$pkgver/LilouCalc-linux.AppImage"
+        "liloucalc.desktop::https://raw.githubusercontent.com/Antidote1911/liloucalc/v$pkgver/installer/liloucalc.desktop"
+        "liloucalc.svg::https://raw.githubusercontent.com/Antidote1911/liloucalc/v$pkgver/image/icon.svg")
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+package() {
+    install -Dm755 LilouCalc-linux.AppImage "$pkgdir/opt/liloucalc/LilouCalc.AppImage"
+
+    install -dm755 "$pkgdir/usr/bin"
+    ln -sf /opt/liloucalc/LilouCalc.AppImage "$pkgdir/usr/bin/LilouCalc"
+
+    install -Dm644 liloucalc.desktop "$pkgdir/usr/share/applications/liloucalc.desktop"
+    install -Dm644 liloucalc.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/liloucalc.svg"
+}

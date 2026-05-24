@@ -1,8 +1,9 @@
-name: Build
+name: CI
 
 on:
   push:
     branches: [master, main]
+    tags: ['v*']
   pull_request:
 
 env:
@@ -20,6 +21,7 @@ jobs:
         include:
           - name: Linux
             os: ubuntu-24.04
+            artifact: LilouCalc-linux.AppImage
 
           - name: Windows
             os: windows-latest
@@ -29,6 +31,7 @@ jobs:
             qt_host: mac
             qt_arch: clang_64
             aqt_version: '==3.1.19'
+            artifact: LilouCalc-macos.dmg
 
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +43,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgsl-dev libxkbcommon-x11-0 'libxcb-*'
+            libgsl-dev xvfb libxkbcommon-x11-0 'libxcb-*'
 
       - name: Install Qt ${{ env.QT_VERSION }} (Linux)
         if: runner.os == 'Linux'
@@ -63,7 +66,7 @@ jobs:
           cache: true
           aqtversion: ${{ matrix.aqt_version }}
 
-      - name: Setup MSYS2 with Qt6 and GSL (Windows)
+      - name: Setup MSYS2 with Qt6, GSL and NSIS (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
@@ -77,6 +80,8 @@ jobs:
             mingw-w64-x86_64-gsl
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-nsis
+            zip
 
       - name: Install GSL universal (macOS)
         if: runner.os == 'macOS'
@@ -123,3 +128,80 @@ jobs:
         if: runner.os == 'Windows'
         shell: msys2 {0}
         run: cmake --build build --parallel
+
+      # --- Packaging & upload : uniquement sur tag v* ---
+
+      - name: Package AppImage (Linux)
+        if: runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cmake --install build --prefix AppDir/usr
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          export QMAKE=$(which qmake6 2>/dev/null || which qmake)
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
+          mv LilouCalc*.AppImage LilouCalc-linux.AppImage
+
+      - name: Package DMG (macOS)
+        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          macdeployqt build/LilouCalc.app -dmg
+          mv build/LilouCalc.dmg LilouCalc-macos.dmg
+
+      - name: Package Windows portable ZIP
+        if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/v')
+        shell: msys2 {0}
+        run: |
+          cmake --install build --prefix artifact
+          windeployqt6 --release artifact/LilouCalc.exe
+          ldd build/LilouCalc.exe | awk '/\/mingw64\//{print $3}' | xargs -I{} cp -n {} artifact/ || true
+          cd artifact && zip -r ../LilouCalc-Windows-portable.zip .
+
+      - name: Package Windows installer
+        if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/v')
+        shell: msys2 {0}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          makensis -DAPP_VERSION="$VERSION" installer/windows.nsi
+
+      - name: Upload artifact (Linux/macOS)
+        if: runner.os != 'Windows' && startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+      - name: Upload portable ZIP (Windows)
+        if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: LilouCalc-Windows-portable.zip
+          path: LilouCalc-Windows-portable.zip
+
+      - name: Upload installer (Windows)
+        if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: LilouCalc-Windows-setup.exe
+          path: LilouCalc-Windows-setup.exe
+
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            LilouCalc-linux.AppImage/LilouCalc-linux.AppImage
+            LilouCalc-macos.dmg/LilouCalc-macos.dmg
+            LilouCalc-Windows-portable.zip/LilouCalc-Windows-portable.zip
+            LilouCalc-Windows-setup.exe/LilouCalc-Windows-setup.exe
